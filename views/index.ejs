@@ -8,6 +8,34 @@
 <body>
     <h1>HomePage</h1>
     <%= username %>
-    <canvas id="myCanvas" width="200" height="100" style="border:1px solid #000000;">
+    <canvas id="myCanvas" style="border:1px solid #000000;">
     </body>
+    <script>
+        const size = 560;
+        const bsize = 560/8;
+        var c = document.getElementById("myCanvas");
+        c.width = size;
+        c.height = size
+
+        var ctx = c.getContext("2d");
+
+        for(let i=0;i<8;i++){
+            for(let j=0;j<8;j++){
+                topx = i*bsize;
+                topy = j*bsize;
+                
+                if ((i+j) % 2 == 0){
+                    ctx.fillStyle = "black";
+                    
+                }
+                else{
+                    ctx.fillStyle = "white";
+                }
+                ctx.fillRect(topx,topy,topx+bsize,topy+bsize);
+            }
+
+        }
+        
+        
+    </script>
 </html>
