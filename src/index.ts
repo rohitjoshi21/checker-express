@@ -35,7 +35,8 @@ app.get('/', isAuthenticated, async (req, res) => {
 });
 
 
-app.use(express.static('public')); // If you have static files
+
+app.use(express.static('dist')); // If you have static files
 app.use(express.urlencoded({ extended: true })); // For form parsing
 app.use(express.json()); // For parsing JSON bodies
 app.use('/auth', authRoutes);
@@ -50,7 +51,7 @@ app.listen(port, async () => {
     await mongoose.connect(
       process.env.DATABASE_URL as string
     );
-    console.log("🛢️  Connected To Database");
+    console.log("🛢️  Connected To Database 111");
   } catch (error) {
     console.log("⚠️ Error to connect Database");
   }
