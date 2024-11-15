@@ -1,19 +1,36 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+// middlewares/authMiddleware.ts
 
+import { Response, NextFunction } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { User } from '../models/userModel';
+import { CustomRequest } from '../types/custom';
 
-export const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+export const isAuthenticated = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
-    if (!token) {
-        return res.redirect('/auth/login');
+  if (!token) {
+    res.redirect('/auth/login');
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      res.redirect('/auth/login');
+      return;
     }
 
-    try {
-    
-        jwt.verify(token, process.env.JWT_SECRET as string);
-        next();
-    } catch (error) {
-        return res.redirect('/auth/login');
-    }
+    req.username = user.username;
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.redirect('/auth/login');
+    return;
+  }
 };
