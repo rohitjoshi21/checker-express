@@ -5,11 +5,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { User } from '../models/userModel';
 import { CustomRequest } from '../types/custom';
 
-export const isAuthenticated = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const isAuthenticated = async (req: CustomRequest, res: Response,next: NextFunction): Promise<void> => {
   const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -26,8 +22,14 @@ export const isAuthenticated = async (
       return;
     }
 
+    //if already logged in, redirect to homepage
+    if (req.originalUrl == "/auth/login" || req.originalUrl == "/auth/signup"){
+      res.redirect('/');
+    }
+
     req.username = user.username;
     next();
+    
   } catch (error) {
     console.error('Authentication error:', error);
     res.redirect('/auth/login');

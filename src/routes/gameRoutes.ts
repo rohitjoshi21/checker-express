@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.get('/create-game', getCreateGamePage);
 
-router.get('/join-game', getJoinGamePage);
-
+router.get('/join-game/:gameId', getJoinGamePage);
 
 export default router;

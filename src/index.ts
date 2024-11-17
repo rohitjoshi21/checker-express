@@ -10,6 +10,7 @@ import { isAuthenticated } from './middlewares/authMiddleware';
 import jwt from "jsonwebtoken";
 import authRoutes from './routes/authRoutes';
 import gameRoutes from './routes/gameRoutes';
+import apiRoutes from './routes/apiRoutes';
 import { CustomRequest } from './types/custom';
 
 dotenv.config();
@@ -25,7 +26,7 @@ app.use(cookieParser());
 
 app.get('/', isAuthenticated, async (req: CustomRequest, res: Response) => {
   res.render('index', {
-    username: req.username
+    'username': req.username
   });
 });
 
@@ -33,7 +34,8 @@ app.use(express.static('dist'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/auth', authRoutes);
-app.use('/game', gameRoutes);
+app.use('/game', isAuthenticated, gameRoutes);
+app.use('/api/games', isAuthenticated, apiRoutes);
 
 app.listen(port, async () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
