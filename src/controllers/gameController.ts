@@ -33,9 +33,27 @@ export const getJoinGamePage:RequestHandler = async (req: CustomRequest, res: Re
             await game.save();
         }
 
-        res.render('gamewindow',{
-            'username':req.username
-        });
+        let player1 = game.players[0];
+        let player2 = 'Not Joined';
+        if (game.players.length >= 2){
+            player2 = game.players[1];
+        }
+
+        if (game.players.indexOf(req.username!) == 0){
+            res.render('gamewindow',{
+                'username':req.username,
+                'player1':player1,
+                'player2':player2
+            });
+        }
+        else if (game.players.indexOf(req.username!) == 1){
+            res.render('gamewindow',{
+                'username':req.username,
+                'player1':player2,
+                'player2':player1
+            });
+        }
+
 
         // res.json({ message: 'Joined game successfully' });
     } catch (error) {

@@ -91,12 +91,42 @@ interface GameState {
         this.showError('Failed to load the game. Please try refreshing.');
       }
     }
-  
+    
+    private updatePlayerStatus(): void {
+        const player1Status = document.getElementById('player1Status');
+        const player2Status = document.getElementById('player2Status');
+        const gameStatus = document.getElementById('gameStatus');
+        const player1color = document.getElementById('player1color');
+        const player2color = document.getElementById('player2color');
+        
+        console.log(this.turn);
+        if (player1Status && player2Status && player1color && player2color && gameStatus) {
+            if (this.flipped) {
+                // Player 1 is red (1), Player 2 is blue (-1)
+                player1Status.className = `player-status ${this.turn === 1 ? 'active-turn' : 'waiting-turn'}`;
+                player2Status.className = `player-status ${this.turn === -1 ? 'active-turn' : 'waiting-turn'}`;
+                player1Status.textContent = this.turn === 1 ? 'Your Turn' : 'Waiting...';
+                player2Status.textContent = this.turn === -1 ? 'Your Turn' : 'Waiting...';
+                player1color.className = 'color-indicator red-piece';
+                player2color.className = 'color-indicator blue-piece';
+            } else {
+                // Player 1 is blue (-1), Player 2 is red (1)
+                player1Status.className = `player-status ${this.turn === -1 ? 'active-turn' : 'waiting-turn'}`;
+                player2Status.className = `player-status ${this.turn === 1 ? 'active-turn' : 'waiting-turn'}`;
+                player1Status.textContent = this.turn === -1 ? 'Your Turn' : 'Waiting...';
+                player2Status.textContent = this.turn === 1 ? 'Your Turn' : 'Waiting...';
+                player1color.className = 'color-indicator blue-piece';
+                player2color.className = 'color-indicator red-piece';
+            }
+        }
+    }
+
     private updateGameState(data: GameState): void {
       this.board = data.board;
       this.turn = data.turn;
       this.flipped = data.flipped;
       this.myPiece = this.flipped ? 1 : -1;
+      this.updatePlayerStatus();
     }
   
     private async sendMove(move: Move): Promise<void> {
@@ -267,13 +297,14 @@ interface GameState {
     private async handleMoveAttempt(x: number, y: number): Promise<void> {
       const move = this.possibleMoves.find(([p, q]) => p === x && q === y);
       if (move) {
-        await this.sendMove({
+        const response = await this.sendMove({
           fromX: this.selectedPiece.x,
           fromY: this.selectedPiece.y,
           toX: x,
           toY: y,
           capture: move[2]
         });
+        // const data = response.json();
         this.checkWin();
         this.resetSelection();
       }
