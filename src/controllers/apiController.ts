@@ -1,5 +1,4 @@
-import { Response, RequestHandler } from 'express';
-// import { gameService } from '../services/gameService'; 
+import { Response, RequestHandler } from 'express'; 
 import { CustomRequest} from '../types/custom'
 import Game from '../models/gameModel';
 
@@ -105,22 +104,21 @@ export const makeMove:RequestHandler = async (req: CustomRequest, res: Response)
 
         await game.save();
 
-        // res.json({
-        //     board: game.board,
-        //     turn: game.turn,
-        //     status: game.status,
-        //     winner: game.winner
-        // });
-        res.json({msg:"Move recorded"});
+        res.json({
+            board: game.board,
+            turn: game.turn,
+            status: game.status,
+            winner: game.winner
+        });
+        
     } catch (error) {
         res.status(500).json({ error: 'Failed to make move' });
     }
 };
 
 function isValidMove(board: number[], fromX: number, fromY: number, toX: number, toY: number, capture: number, turn: number): boolean {
-    // Implement move validation logic
-    // This should match your client-side validation
-    return true; // Placeholder - implement actual validation
+    // server-side validation logic needs to be put here
+    return true; 
 }
 
 function checkWinner(board: number[]): number | null {
