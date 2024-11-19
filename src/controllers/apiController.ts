@@ -1,28 +1,29 @@
-import { Response, RequestHandler } from 'express'; 
-import { CustomRequest} from '../types/custom'
-import Game from '../models/gameModel';
+import { Request, Response, RequestHandler } from 'express';
+import { Game } from '../models/gameModel';
 
-export const createNewBoard:RequestHandler = async (req: CustomRequest, res: Response) => {
+export const createNewBoard: RequestHandler = async (
+    req: Request,
+    res: Response,
+) => {
     try {
         const initialBoard = new Array(64).fill(0);
-        for(let i=0; i<8; i++){
-            for(let j=0; j<8; j++){
-                if ((i+j)%2 === 1){
-                    if (j<=2){
-                        initialBoard[i*8+j] = 1;
-                    }
-                    else if(j>=5){
-                        initialBoard[i*8+j] = -1;
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                if ((i + j) % 2 === 1) {
+                    if (j <= 2) {
+                        initialBoard[i * 8 + j] = 1;
+                    } else if (j >= 5) {
+                        initialBoard[i * 8 + j] = -1;
                     }
                 }
             }
         }
 
         const game = new Game({
-            players: [req.username],
+            players: [req['username']],
             board: initialBoard,
             turn: -1,
-            status: 'waiting'
+            status: 'waiting',
         });
 
         await game.save();
@@ -32,7 +33,10 @@ export const createNewBoard:RequestHandler = async (req: CustomRequest, res: Res
     }
 };
 
-export const getBoardData:RequestHandler = async (req: CustomRequest, res: Response):Promise<void> => {
+export const getBoardData: RequestHandler = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
     try {
         const game = await Game.findById(req.params.gameId);
         if (!game) {
@@ -41,7 +45,7 @@ export const getBoardData:RequestHandler = async (req: CustomRequest, res: Respo
         }
 
         let isFlipped = false;
-        if(game.players.indexOf(req.username!) == 1){
+        if (game.players.indexOf(req['username']!) == 1) {
             isFlipped = true;
         }
 
@@ -49,14 +53,17 @@ export const getBoardData:RequestHandler = async (req: CustomRequest, res: Respo
             board: game.board,
             turn: game.turn,
             flipped: isFlipped,
-            status: game.status
+            status: game.status,
         });
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch game' });
     }
 };
 
-export const makeMove:RequestHandler = async (req: CustomRequest, res: Response):Promise<void> => {
+export const makeMove: RequestHandler = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
     try {
         const game = await Game.findById(req.params.gameId);
         if (!game) {
@@ -65,29 +72,31 @@ export const makeMove:RequestHandler = async (req: CustomRequest, res: Response)
         }
 
         const { fromX, fromY, toX, toY, capture } = req.body;
-        
+
         // Validate move
-        if (!isValidMove(game.board, fromX, fromY, toX, toY, capture, game.turn)) {
+        if (
+            !isValidMove(game.board, fromX, fromY, toX, toY, capture, game.turn)
+        ) {
             res.status(400).json({ error: 'Invalid move' });
             return;
         }
 
         // Update board
         const newBoard = [...game.board];
-        newBoard[toX*8 + toY] = newBoard[fromX*8 + fromY];
-        newBoard[fromX*8 + fromY] = 0;
+        newBoard[toX * 8 + toY] = newBoard[fromX * 8 + fromY];
+        newBoard[fromX * 8 + fromY] = 0;
 
         if (capture) {
             const captureX = (fromX + toX) / 2;
             const captureY = (fromY + toY) / 2;
-            newBoard[captureX*8 + captureY] = 0;
+            newBoard[captureX * 8 + captureY] = 0;
         }
 
         // Check for promotion
         if (toY === 0 || toY === 7) {
-            const piece = newBoard[toX*8 + toY];
+            const piece = newBoard[toX * 8 + toY];
             if (Math.abs(piece) === 1) {
-                newBoard[toX*8 + toY] = piece * 2;
+                newBoard[toX * 8 + toY] = piece * 2;
             }
         }
 
@@ -108,17 +117,24 @@ export const makeMove:RequestHandler = async (req: CustomRequest, res: Response)
             board: game.board,
             turn: game.turn,
             status: game.status,
-            winner: game.winner
+            winner: game.winner,
         });
-        
     } catch (error) {
         res.status(500).json({ error: 'Failed to make move' });
     }
 };
 
-function isValidMove(board: number[], fromX: number, fromY: number, toX: number, toY: number, capture: number, turn: number): boolean {
+function isValidMove(
+    board: number[],
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number,
+    capture: number,
+    turn: number,
+): boolean {
     // server-side validation logic needs to be put here
-    return true; 
+    return true;
 }
 
 function checkWinner(board: number[]): number | null {

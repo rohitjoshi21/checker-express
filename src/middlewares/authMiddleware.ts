@@ -1,38 +1,39 @@
-// middlewares/authMiddleware.ts
-
-import { Response, NextFunction } from 'express';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/userModel';
-import { CustomRequest } from '../types/custom';
+import { RedirectPaths } from '../config/redirects';
+import jwt from 'jsonwebtoken';
 
-export const isAuthenticated = async (req: CustomRequest, res: Response,next: NextFunction): Promise<void> => {
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+// this middleware authenticates a user and add username in the request field
 
-  if (!token) {
-    res.redirect('/auth/login');
-    return;
-  }
+export const isAuthenticated = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    const token = req.cookies.token;
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-    const user = await User.findById(decoded.userId);
-
-    if (!user) {
-      res.redirect('/auth/login');
-      return;
+    if (!token) {
+        res.redirect(RedirectPaths.authLogin);
+        return;
     }
 
-    //if already logged in, redirect to homepage
-    if (req.originalUrl == "/auth/login" || req.originalUrl == "/auth/signup"){
-      res.redirect('/');
-    }
+    try {
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string,
+        ) as jwt.JwtPayload;
+        const user = await User.findById(decoded.userId);
 
-    req.username = user.username;
-    next();
-    
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.redirect('/auth/login');
-    return;
-  }
+        // user not found
+        if (!user) {
+            res.redirect(RedirectPaths.authLogin);
+            return;
+        }
+        req['username'] = user.username;
+        next();
+    } catch (error) {
+        console.error('Authentication error:', error);
+        res.redirect(RedirectPaths.authLogin);
+        return;
+    }
 };

@@ -1,15 +1,16 @@
 import express from 'express';
-import { getLoginPage, getSignupPage, postLogin, postSignup } from '../controllers/authController';
+import { AuthController } from '../controllers/authController';
+
+const authController = new AuthController();
 
 const router = express.Router();
 
+router.get('/login', authController.getLoginPage);
 
-router.get('/login', getLoginPage);
+router.post('/login', authController.postLogin);
 
-router.post('/login', postLogin);
+router.get('/signup', authController.getSignupPage);
 
-router.get('/signup', getSignupPage);
-
-router.post('/signup', postSignup);
+router.post('/signup', authController.postSignup);
 
 export default router;

@@ -1,17 +1,31 @@
 import bcrypt from 'bcrypt';
-import { User } from '../models/userModel'; // Import your User model
+import jwt from 'jsonwebtoken';
+import { UserRepository } from '../repos/userRepo';
 
-export const authService = {
-    async authenticateUser(username: string, password: string) {
-        const user = await User.findOne({ username });
-        if (user && await bcrypt.compare(password, user.password)) {
-            return user;
-        }
-        return null;
-    },
-    
-    async registerUser(username: string, hashedPassword: string) {
-        const newUser = new User({ username, password: hashedPassword });
-        await newUser.save();
+export class AuthService {
+    private userRepository: UserRepository;
+
+    constructor() {
+        this.userRepository = new UserRepository();
     }
-};
+
+    async authenticateUser(username: string, password: string) {
+        const user = await this.userRepository.findUser(username);
+
+        if (!user) {
+            throw 'Username not found';
+        }
+
+        if (await bcrypt.compare(password, user.password)) {
+            const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+            return token;
+        } else {
+            throw 'Incorrect password';
+        }
+    }
+
+    async registerUser(username: string, password: string) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        this.userRepository.registerUser(username, hashedPassword);
+    }
+}

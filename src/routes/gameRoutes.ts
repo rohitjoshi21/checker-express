@@ -1,10 +1,12 @@
 import express from 'express';
-import { getCreateGamePage, getJoinGamePage } from '../controllers/gameController';
+import { GameController } from '../controllers/gameController';
+
+const gameController = new GameController();
 
 const router = express.Router();
 
-router.get('/create-game', getCreateGamePage);
+router.get('/create-game', gameController.getCreateGamePage);
 
-router.get('/join-game/:gameId', getJoinGamePage);
+router.get('/join-game/:gameId', gameController.getJoinGamePage);
 
 export default router;

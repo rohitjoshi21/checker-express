@@ -1,36 +1,44 @@
-import Game, {IGame} from '../models/gameModel';
+import { initializeBoard } from '../utils/gameUtils';
+import { GameRepository } from '../repos/gameRepo';
 
-export const gameService = {
-    async createnewgame(username: string): Promise<string> {
-        try {
+export class GameService {
+    private gameRepository: GameRepository;
 
-            const initialBoard = new Array(64).fill(0);
-            for(let i=0; i<8; i++){
-                for(let j=0; j<8; j++){
-                    if ((i+j)%2 === 1){
-                        if (j<=2){
-                            initialBoard[i*8+j] = 1;
-                        }
-                        else if(j>=5){
-                            initialBoard[i*8+j] = -1;
-                        }
-                    }
-                }
+    constructor() {
+        this.gameRepository = new GameRepository();
+    }
+
+    async createNewGame(username: string): Promise<string> {
+        const initialBoard = initializeBoard();
+        const gameId = await this.gameRepository.saveGame(username, initialBoard);
+        return gameId;
+    }
+
+    async joinGame(username: string, gameId: string): Promise<string[]> {
+        const game = await this.gameRepository.findGame(gameId);
+        if (!game) {
+            throw 'Game not found';
+        }
+
+        if (!game.players.includes(username)) {
+            if (game.players.length >= 2) {
+                throw 'Game is full';
             }
 
-            const game = new Game({
-                players: [username],
-                board: initialBoard,
-                turn: -1,
-                status: 'waiting'
-            });
-
-            const savedGame = await game.save();
-            return savedGame._id.toString();
-
-        } catch (err) {
-            console.log(err);
-            return '';
+            this.gameRepository.addPlayer(gameId, username);
         }
+
+        let player1 = game.players[0];
+        let player2 = 'Not Joined';
+        if (game.players.length >= 2) {
+            player2 = game.players[1];
+        }
+
+        if (game.players.indexOf(username) == 0) {
+            return [player1, player2];
+        } else if (game.players.indexOf(username) == 1) {
+            return [player2, player1];
+        }
+        return [];
     }
-};
+}
