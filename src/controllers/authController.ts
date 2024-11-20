@@ -4,8 +4,8 @@ import { AuthService } from '../services/authService';
 export class AuthController {
     private authService: AuthService;
 
-    constructor() {
-        this.authService = new AuthService();
+    constructor(authService: AuthService) {
+        this.authService = authService;
     }
 
     getLoginPage(req: Request, res: Response): void {
@@ -15,6 +15,7 @@ export class AuthController {
     async postLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { username, password } = req.body;
+            console.log(username, password);
             const token = await this.authService.authenticateUser(username, password);
             res.cookie('token', token, { httpOnly: true });
             res.redirect('/');
