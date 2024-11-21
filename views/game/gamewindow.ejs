@@ -1,51 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkers Game</title>
-    <link rel="stylesheet" href="/gamewindow.css">
-    <script src="/game.js"></script>
-</head>
-<body>
-    <div class="game-container">
-        <h1>Checkers Game</h1>
-        <div class="game-layout">
-            <div class="player-info">
-                <div class="player-card">
-                    <div class="player-info-group">
-                        <div class="player-name"><%= player2 %></div>
-                        <div class="piece-color">
-                            <span>Pieces:</span>
-                            <div id = "player2color" class="color-indicator blue-piece"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Checkers Game</title>
+        <link rel="stylesheet" href="/gamewindow.css" />
+        <script src="/gamebundled.js"></script>
+    </head>
+    <body>
+        <div class="game-container">
+            <h1>Checkers Game</h1>
+            <div class="game-layout">
+                <div class="player-info">
+                    <div class="player-card">
+                        <div class="player-info-group">
+                            <div class="player-name"><%= player2 %></div>
+                            <div class="piece-color">
+                                <span>Pieces:</span>
+                                <div id="player2color" class="color-indicator blue-piece"></div>
+                            </div>
                         </div>
+                        <div id="player2Status" class="player-status waiting-turn">Waiting...</div>
                     </div>
-                    <div id="player2Status" class="player-status waiting-turn">
-                        Waiting...
+                </div>
+
+                <canvas id="myCanvas"></canvas>
+
+                <div class="player-info">
+                    <div class="player-card">
+                        <div class="player-info-group">
+                            <div class="player-name"><%= player1 %></div>
+                            <div class="piece-color">
+                                <span>Pieces:</span>
+                                <div id="player1color" class="color-indicator red-piece"></div>
+                            </div>
+                        </div>
+                        <div id="player1Status" class="player-status active-turn">Your Turn</div>
                     </div>
                 </div>
             </div>
-
-            <canvas id="myCanvas"></canvas>
-
-            <div class="player-info">
-                <div class="player-card">
-                    <div class="player-info-group">
-                        <div class="player-name"><%= player1 %></div>
-                        <div class="piece-color">
-                            <span>Pieces:</span>
-                            <div id = "player1color" class="color-indicator red-piece"></div>
-                        </div>
-                    </div>
-                    <div id="player1Status" class="player-status active-turn">
-                        Your Turn
-                    </div>
-                </div>
-            </div>
+            <div class="game-status" id="gameStatus">Game in Progress</div>
         </div>
-        <div class="game-status" id="gameStatus">
-            Game in Progress
-        </div>
-    </div>
-</body>
+    </body>
 </html>

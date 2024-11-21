@@ -1,3 +1,5 @@
+import { io, Socket } from 'socket.io-client';
+
 interface GameState {
     board: number[];
     turn: number;
@@ -34,6 +36,8 @@ class CheckersGame {
     };
     private possibleMoves: Array<[number, number, number]> = [];
 
+    private socket!: Socket;
+
     constructor() {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d')!;
@@ -43,11 +47,13 @@ class CheckersGame {
         window.addEventListener('DOMContentLoaded', () => this.initialize());
     }
 
+    get gameid() {
+        return this.gameId;
+    }
+
     private async initialize(): Promise<void> {
         // Get canvas and context
-        const canvasElement = document.getElementById(
-            'myCanvas',
-        ) as HTMLCanvasElement;
+        const canvasElement = document.getElementById('myCanvas') as HTMLCanvasElement;
         if (!canvasElement) {
             throw new Error('Canvas element not found');
         }
@@ -69,6 +75,8 @@ class CheckersGame {
         }
         this.gameId = gameId;
 
+        this.setupSocketConnection();
+
         // Set up event listeners
         this.canvas.addEventListener('click', (e) => this.handleClick(e));
 
@@ -79,6 +87,8 @@ class CheckersGame {
 
     private async fetchBoardState(): Promise<void> {
         try {
+            // this.socket.emit("fetchboard");
+
             const response = await fetch(`/api/games/${this.gameId}/board`);
             if (!response.ok) throw new Error('Failed to fetch board');
 
@@ -99,31 +109,21 @@ class CheckersGame {
         const player2color = document.getElementById('player2color');
 
         console.log(this.turn);
-        if (
-            player1Status &&
-            player2Status &&
-            player1color &&
-            player2color &&
-            gameStatus
-        ) {
+        if (player1Status && player2Status && player1color && player2color && gameStatus) {
             if (this.flipped) {
                 // Player 1 is red (1), Player 2 is blue (-1)
                 player1Status.className = `player-status ${this.turn === 1 ? 'active-turn' : 'waiting-turn'}`;
                 player2Status.className = `player-status ${this.turn === -1 ? 'active-turn' : 'waiting-turn'}`;
-                player1Status.textContent =
-                    this.turn === 1 ? 'Your Turn' : 'Waiting...';
-                player2Status.textContent =
-                    this.turn === -1 ? 'Your Turn' : 'Waiting...';
+                player1Status.textContent = this.turn === 1 ? 'Your Turn' : 'Waiting...';
+                player2Status.textContent = this.turn === -1 ? 'Your Turn' : 'Waiting...';
                 player1color.className = 'color-indicator red-piece';
                 player2color.className = 'color-indicator blue-piece';
             } else {
                 // Player 1 is blue (-1), Player 2 is red (1)
                 player1Status.className = `player-status ${this.turn === -1 ? 'active-turn' : 'waiting-turn'}`;
                 player2Status.className = `player-status ${this.turn === 1 ? 'active-turn' : 'waiting-turn'}`;
-                player1Status.textContent =
-                    this.turn === -1 ? 'Your Turn' : 'Waiting...';
-                player2Status.textContent =
-                    this.turn === 1 ? 'Your Turn' : 'Waiting...';
+                player1Status.textContent = this.turn === -1 ? 'Your Turn' : 'Waiting...';
+                player2Status.textContent = this.turn === 1 ? 'Your Turn' : 'Waiting...';
                 player1color.className = 'color-indicator blue-piece';
                 player2color.className = 'color-indicator red-piece';
             }
@@ -168,7 +168,7 @@ class CheckersGame {
             } catch (error) {
                 console.error('Error polling game status:', error);
             }
-        }, 500);
+        }, 2000);
     }
 
     private drawBoard(): void {
@@ -227,10 +227,7 @@ class CheckersGame {
         this.ctx.stroke();
     }
 
-    private calculateValidMoves(
-        i: number,
-        j: number,
-    ): Array<[number, number, number]> {
+    private calculateValidMoves(i: number, j: number): Array<[number, number, number]> {
         const piece = this.board[i * 8 + j];
         let moves: Array<[number, number, number]> = [];
 
@@ -288,10 +285,7 @@ class CheckersGame {
         const adjustedY = this.flipped ? 7 - y : y;
 
         if (this.myPiece === this.turn) {
-            if (
-                this.board[x * 8 + adjustedY] === this.myPiece ||
-                this.board[x * 8 + adjustedY] === this.myPiece * 2
-            ) {
+            if (this.board[x * 8 + adjustedY] === this.myPiece || this.board[x * 8 + adjustedY] === this.myPiece * 2) {
                 this.handlePieceSelection(x, adjustedY);
             } else if (this.selectedPiece.isSelected) {
                 await this.handleMoveAttempt(x, adjustedY);
@@ -319,13 +313,20 @@ class CheckersGame {
     private async handleMoveAttempt(x: number, y: number): Promise<void> {
         const move = this.possibleMoves.find(([p, q]) => p === x && q === y);
         if (move) {
-            const response = await this.sendMove({
+            this.socket.emit('move', {
                 fromX: this.selectedPiece.x,
                 fromY: this.selectedPiece.y,
                 toX: x,
                 toY: y,
                 capture: move[2],
             });
+            // const response = await this.sendMove({
+            //     fromX: this.selectedPiece.x,
+            //     fromY: this.selectedPiece.y,
+            //     toX: x,
+            //     toY: y,
+            //     capture: move[2],
+            // });
             // const data = response.json();
             this.checkWin();
             this.resetSelection();
@@ -340,7 +341,15 @@ class CheckersGame {
     private showError(message: string): void {
         alert(message);
     }
+
+    private setupSocketConnection(): void {
+        console.log('socket starting', game.gameid);
+
+        const url = 'http://127.0.0.1:3000/game/join-game/'.concat(game.gameId);
+        console.log(url);
+        this.socket = io(url);
+    }
 }
 
 // Initialize the game
-new CheckersGame();
+const game = new CheckersGame();

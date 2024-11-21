@@ -1,6 +1,6 @@
 // index.ts
 
-import express, { Request, Application, Response } from 'express';
+import express, { Request, Application, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import mongoose from 'mongoose';
@@ -12,6 +12,8 @@ import authRoutes from './routes/authRoutes';
 import gameRoutes from './routes/gameRoutes';
 import apiRoutes from './routes/apiRoutes';
 import { errorHandler } from './middlewares/errorHandler';
+import { createServer } from 'http';
+import { SocketController } from './sockets/sockerController';
 
 dotenv.config();
 
@@ -39,12 +41,16 @@ app.use('/game', isAuthenticated, gameRoutes);
 app.use('/api/games', isAuthenticated, apiRoutes);
 app.use(errorHandler);
 
-app.listen(port, async () => {
+const httpServer = createServer(app);
+
+new SocketController(httpServer, [isAuthenticated, cors(), cookieParser()]);
+
+httpServer.listen(port, async () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
 
     try {
         await mongoose.connect(process.env.DATABASE_URL as string);
-        console.log('🛢️  Connected To Database');
+        console.log('🛢️  Connected To Database!!');
     } catch (error) {
         console.log('⚠️ Error to connect Database');
     }
