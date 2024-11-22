@@ -6,7 +6,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { isAuthenticated } from './middlewares/authMiddleware';
+import { isAuthenticated, isAuthenticatedSocket } from './middlewares/authMiddleware';
 import { redirectIfAuthenticated } from './middlewares/redirectIfAuthenticated';
 import authRoutes from './routes/authRoutes';
 import gameRoutes from './routes/gameRoutes';
@@ -43,7 +43,8 @@ app.use(errorHandler);
 
 const httpServer = createServer(app);
 
-new SocketController(httpServer, [isAuthenticated, cors(), cookieParser()]);
+// new SocketController(httpServer, [isAuthenticated, cors(), cookieParser()]);
+new SocketController(httpServer, []);
 
 httpServer.listen(port, async () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);

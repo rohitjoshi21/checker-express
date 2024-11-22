@@ -79,26 +79,6 @@ class CheckersGame {
 
         // Set up event listeners
         this.canvas.addEventListener('click', (e) => this.handleClick(e));
-
-        // Initialize game state
-        await this.fetchBoardState();
-        this.startPolling();
-    }
-
-    private async fetchBoardState(): Promise<void> {
-        try {
-            // this.socket.emit("fetchboard");
-
-            const response = await fetch(`/api/games/${this.gameId}/board`);
-            if (!response.ok) throw new Error('Failed to fetch board');
-
-            const data: GameState = await response.json();
-            this.updateGameState(data);
-            this.drawBoard();
-        } catch (error) {
-            console.error('Error fetching board:', error);
-            this.showError('Failed to load the game. Please try refreshing.');
-        }
     }
 
     private updatePlayerStatus(): void {
@@ -136,39 +116,6 @@ class CheckersGame {
         this.flipped = data.flipped;
         this.myPiece = this.flipped ? 1 : -1;
         this.updatePlayerStatus();
-    }
-
-    private async sendMove(move: Move): Promise<void> {
-        try {
-            const response = await fetch(`/api/games/${this.gameId}/move`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(move),
-            });
-
-            if (!response.ok) throw new Error('Invalid move');
-            await this.fetchBoardState();
-        } catch (error) {
-            console.error('Error sending move:', error);
-            this.showError('Failed to make move. Please try again.');
-        }
-    }
-
-    private startPolling(): void {
-        setInterval(async () => {
-            try {
-                const response = await fetch(`/api/games/${this.gameId}/board`);
-                if (!response.ok) throw new Error('Failed to get game status');
-
-                const data: GameState = await response.json();
-                if (data.turn !== this.turn) {
-                    this.updateGameState(data);
-                    this.drawBoard();
-                }
-            } catch (error) {
-                console.error('Error polling game status:', error);
-            }
-        }, 2000);
     }
 
     private drawBoard(): void {
@@ -288,7 +235,7 @@ class CheckersGame {
             if (this.board[x * 8 + adjustedY] === this.myPiece || this.board[x * 8 + adjustedY] === this.myPiece * 2) {
                 this.handlePieceSelection(x, adjustedY);
             } else if (this.selectedPiece.isSelected) {
-                await this.handleMoveAttempt(x, adjustedY);
+                this.handleMoveAttempt(x, adjustedY);
             }
         }
     }
@@ -310,7 +257,7 @@ class CheckersGame {
         return false;
     }
 
-    private async handleMoveAttempt(x: number, y: number): Promise<void> {
+    private handleMoveAttempt(x: number, y: number): void {
         const move = this.possibleMoves.find(([p, q]) => p === x && q === y);
         if (move) {
             this.socket.emit('move', {
@@ -320,14 +267,6 @@ class CheckersGame {
                 toY: y,
                 capture: move[2],
             });
-            // const response = await this.sendMove({
-            //     fromX: this.selectedPiece.x,
-            //     fromY: this.selectedPiece.y,
-            //     toX: x,
-            //     toY: y,
-            //     capture: move[2],
-            // });
-            // const data = response.json();
             this.checkWin();
             this.resetSelection();
         }
@@ -347,7 +286,16 @@ class CheckersGame {
 
         const url = 'http://127.0.0.1:3000/game/join-game/'.concat(game.gameId);
         console.log(url);
-        this.socket = io(url);
+        this.socket = io(url, {
+            extraHeaders: {
+                Authorization: document.cookie,
+            },
+        });
+
+        this.socket.on('boardupdate', (boarddata) => {
+            this.updateGameState(boarddata);
+            this.drawBoard();
+        });
     }
 }
 
