@@ -44,7 +44,8 @@ app.use(errorHandler);
 const httpServer = createServer(app);
 
 // new SocketController(httpServer, [isAuthenticated, cors(), cookieParser()]);
-new SocketController(httpServer, []);
+const socketapp = new SocketController(httpServer, /^\/game\/join-game\/([a-zA-Z0-9_-]+)$/);
+socketapp.use(isAuthenticatedSocket);
 
 httpServer.listen(port, async () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
