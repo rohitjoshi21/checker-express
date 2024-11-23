@@ -15,6 +15,7 @@ export class APIService {
             throw new Error('Game not found');
         }
 
+        let nextplayer = game.players.find((player) => player != username);
         let isFlipped = false;
         if (game.players.indexOf(username!) === 1) {
             isFlipped = true;
@@ -26,6 +27,7 @@ export class APIService {
             turn: game.turn,
             flipped: isFlipped,
             status: game.status,
+            nextPlayer: nextplayer,
         };
     }
 
