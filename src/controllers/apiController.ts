@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { Game } from '../models/gameModel';
 import { APIService } from '../services/apiService';
 
 export class APIController {
@@ -13,7 +12,7 @@ export class APIController {
             const boarddata = await this.apiService.getBoardData(req.params.gameId, req['username']!);
             res.json(boarddata);
         } catch (error) {
-            next(new Error('Failed to fetch game'));
+            next(error);
             // res.status(500).json({ error: 'Failed to fetch game' });
         }
     }
@@ -25,7 +24,6 @@ export class APIController {
             res.json(boardData);
         } catch (error) {
             next(error);
-            // res.status(500).json({ error: 'Failed to make move' });
         }
     }
 }

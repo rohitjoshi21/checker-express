@@ -21,6 +21,13 @@ class CheckersGame {
     private readonly BOARD_SIZE = 560;
     private readonly CELL_SIZE = this.BOARD_SIZE / 8;
 
+    private readonly DARK_SQUARE = '#769656'; // Forest green for dark squares
+    private readonly LIGHT_SQUARE = '#eeeed2'; // Light cream for light squares
+    private readonly PIECE_ONE = '#db3e3e'; // Deep red for player 1
+    private readonly PIECE_TWO = '#3e5edb'; // Royal blue for player 2
+    private readonly VALID_MOVE = '#86af49'; // Soft green for valid moves
+    private readonly SELECTED_SQUARE = '#baca44';
+
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private gameId: string;
@@ -59,6 +66,9 @@ class CheckersGame {
         this.canvas.width = this.BOARD_SIZE;
         this.canvas.height = this.BOARD_SIZE;
 
+        this.canvas.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+        this.canvas.style.borderRadius = '4px';
+
         const context = this.canvas.getContext('2d')!;
         this.ctx = context;
 
@@ -81,37 +91,29 @@ class CheckersGame {
     }
 
     private updatePlayerStatus(player1: string, player2: string): void {
-        const player1Status = document.getElementById('player1Status');
-        const player2Status = document.getElementById('player2Status');
-        const gameStatus = document.getElementById('gameStatus');
-        const player1color = document.getElementById('player1color');
-        const player2color = document.getElementById('player2color');
+        const player1Card = document.getElementById('player1Card');
+        const player2Card = document.getElementById('player2Card');
         const player1name = document.getElementById('player1name');
         const player2name = document.getElementById('player2name');
+        const player1color = document.getElementById('player1color');
+        const player2color = document.getElementById('player2color');
 
         if (player1name && player2name) {
             player1name.textContent = player1;
             player2name.textContent = player2;
-            console.log(player1, player2);
-            // player1name.textContent = 'abc';
-            // player2name.textContent = 'efg';
         }
-        // console.log(this.turn);
-        if (player1Status && player2Status && player1color && player2color && gameStatus) {
+
+        if (player1Card && player2Card && player1color && player2color) {
             if (this.flipped) {
                 // Player 1 is red (1), Player 2 is blue (-1)
-                player1Status.className = `player-status ${this.turn === 1 ? 'active-turn' : 'waiting-turn'}`;
-                player2Status.className = `player-status ${this.turn === -1 ? 'active-turn' : 'waiting-turn'}`;
-                player1Status.textContent = this.turn === 1 ? 'Your Turn' : 'Waiting...';
-                player2Status.textContent = this.turn === -1 ? 'Your Turn' : 'Waiting...';
+                player1Card.className = `player-card ${this.turn === 1 ? 'active' : 'inactive'}`;
+                player2Card.className = `player-card ${this.turn === -1 ? 'active' : 'inactive'}`;
                 player1color.className = 'color-indicator red-piece';
                 player2color.className = 'color-indicator blue-piece';
             } else {
                 // Player 1 is blue (-1), Player 2 is red (1)
-                player1Status.className = `player-status ${this.turn === -1 ? 'active-turn' : 'waiting-turn'}`;
-                player2Status.className = `player-status ${this.turn === 1 ? 'active-turn' : 'waiting-turn'}`;
-                player1Status.textContent = this.turn === -1 ? 'Your Turn' : 'Waiting...';
-                player2Status.textContent = this.turn === 1 ? 'Your Turn' : 'Waiting...';
+                player1Card.className = `player-card ${this.turn === -1 ? 'active' : 'inactive'}`;
+                player2Card.className = `player-card ${this.turn === 1 ? 'active' : 'inactive'}`;
                 player1color.className = 'color-indicator blue-piece';
                 player2color.className = 'color-indicator red-piece';
             }
@@ -129,7 +131,11 @@ class CheckersGame {
     private drawBoard(): void {
         const parity = this.flipped ? 1 : 0;
 
-        // Draw board squares
+        // Draw board background
+        this.ctx.fillStyle = '#2f2f2f';
+        this.ctx.fillRect(0, 0, this.BOARD_SIZE, this.BOARD_SIZE);
+
+        // Draw squares with subtle gradient
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 this.drawSquare(i, j, parity);
@@ -142,8 +148,20 @@ class CheckersGame {
         const x = i * this.CELL_SIZE;
         const y = j * this.CELL_SIZE;
 
-        this.ctx.fillStyle = (i + j) % 2 === parity ? 'black' : 'white';
+        this.ctx.fillStyle = (i + j) % 2 === parity ? this.DARK_SQUARE : this.LIGHT_SQUARE;
         this.ctx.fillRect(x, y, this.CELL_SIZE, this.CELL_SIZE);
+
+        // Highlight selected square
+        if (
+            this.selectedPiece.isSelected &&
+            this.selectedPiece.x === i &&
+            (this.flipped ? 7 - this.selectedPiece.y : this.selectedPiece.y) === j
+        ) {
+            this.ctx.fillStyle = this.SELECTED_SQUARE;
+            this.ctx.globalAlpha = 0.5;
+            this.ctx.fillRect(x, y, this.CELL_SIZE, this.CELL_SIZE);
+            this.ctx.globalAlpha = 1;
+        }
     }
 
     private drawPiece(i: number, j: number): void {
@@ -153,19 +171,53 @@ class CheckersGame {
 
         const x = i * this.CELL_SIZE + this.CELL_SIZE / 2;
         const y = j * this.CELL_SIZE + this.CELL_SIZE / 2;
-        const radius = this.CELL_SIZE * 0.4;
+        const radius = this.CELL_SIZE * 0.35;
 
-        // Draw main piece
-        this.ctx.fillStyle = piece > 0 ? 'red' : 'blue';
+        // Add shadow
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        this.ctx.shadowBlur = 4;
+        this.ctx.shadowOffsetX = 2;
+        this.ctx.shadowOffsetY = 2;
+
+        // Draw main piece with gradient
+        const gradient = this.ctx.createRadialGradient(x - radius / 3, y - radius / 3, radius / 10, x, y, radius);
+
+        if (piece > 0) {
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(1, this.PIECE_ONE);
+        } else {
+            gradient.addColorStop(0, '#6b96ff');
+            gradient.addColorStop(1, this.PIECE_TWO);
+        }
+
+        this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
         this.ctx.fill();
 
-        // Draw king marker
+        // Reset shadow
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+
+        // Draw king marker with metallic effect
         if (Math.abs(piece) === 2) {
-            this.ctx.fillStyle = 'black';
+            const kingGradient = this.ctx.createRadialGradient(
+                x - radius / 4,
+                y - radius / 4,
+                radius / 8,
+                x,
+                y,
+                radius / 2,
+            );
+            kingGradient.addColorStop(0, '#fff');
+            kingGradient.addColorStop(0.5, '#ffd700');
+            kingGradient.addColorStop(1, '#daa520');
+
+            this.ctx.fillStyle = kingGradient;
             this.ctx.beginPath();
-            this.ctx.arc(x, y, radius * 0.5, 0, 2 * Math.PI);
+            this.ctx.arc(x, y, radius * 0.4, 0, 2 * Math.PI);
             this.ctx.fill();
         }
     }
@@ -175,11 +227,18 @@ class CheckersGame {
         const x = p * this.CELL_SIZE + this.CELL_SIZE / 2;
         const y = adjustedQ * this.CELL_SIZE + this.CELL_SIZE / 2;
 
-        this.ctx.strokeStyle = 'green';
-        this.ctx.lineWidth = 2;
+        // Draw outer circle
+        this.ctx.strokeStyle = this.VALID_MOVE;
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.arc(x, y, this.CELL_SIZE * 0.4, 0, 2 * Math.PI);
+        this.ctx.arc(x, y, this.CELL_SIZE * 0.35, 0, 2 * Math.PI);
         this.ctx.stroke();
+
+        // Draw inner dot
+        this.ctx.fillStyle = this.VALID_MOVE;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.CELL_SIZE * 0.1, 0, 2 * Math.PI);
+        this.ctx.fill();
     }
 
     private calculateValidMoves(i: number, j: number): Array<[number, number, number]> {
