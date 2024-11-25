@@ -17,7 +17,7 @@ export class GameRepository {
             players: [username],
             board: initialBoard,
             turn: -1,
-            status: 'waiting',
+            status: 'notpaired',
         });
         const savedGame = await game.save();
         return savedGame._id.toString();

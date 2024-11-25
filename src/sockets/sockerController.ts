@@ -1,7 +1,7 @@
 import { Socket, Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { APIService } from '../services/apiService';
-import { isAuthenticatedSocket, MiddlewareFunction } from '../middlewares/authMiddleware';
+import { MiddlewareFunction } from '../middlewares/authMiddleware';
 
 const a = /^\/game\/join-game\/([a-zA-Z0-9_-]+)$/;
 
@@ -11,7 +11,12 @@ export class SocketController {
     private namespace;
 
     constructor(server: HTTPServer, socketurl: RegExp) {
-        this.io = new SocketIOServer(server);
+        this.io = new SocketIOServer(server, {
+            cors: {
+                origin: '*',
+                methods: ['GET', 'POST'],
+            },
+        });
 
         this.namespace = this.io.of(socketurl);
 
@@ -26,15 +31,19 @@ export class SocketController {
     private async broadcastboard(socket: Socket, gameid: string, username: string) {
         const boarddata = await this.apiService.getBoardData(gameid, username);
 
-        let nextPlayer = boarddata.nextPlayer;
-        //broadcasting to all connections, need to send this to only players of this board
+        let nextPlayer = boarddata.nextUsername;
+        // let observers = boarddata.observers;
+        // observers.forEach((observer: string) => {
+        //     this.namespace.to(observer).emit('boardupdate', boarddata);
+        // });
         this.namespace.to(username).emit('boardupdate', boarddata);
         if (nextPlayer) {
+            boarddata.nextUsername = boarddata.myUsername;
+            boarddata.myUsername = nextPlayer;
+
             boarddata.flipped = !boarddata.flipped;
             this.namespace.to(nextPlayer).emit('boardupdate', boarddata);
         }
-
-        // socket.broadcast.emit('boardupdate', boarddata);
     }
 
     private async initializeSocket() {
@@ -47,7 +56,6 @@ export class SocketController {
             console.log('User Connected: ', username);
 
             socket.join(username);
-            console.log('Room joined by user: ', socket.rooms);
 
             this.broadcastboard(socket, currgameId, username);
 
@@ -56,6 +64,12 @@ export class SocketController {
                 const { fromX, fromY, toX, toY, capture } = move;
                 await this.apiService.makeMove(currgameId, fromX, fromY, toX, toY, capture);
 
+                this.broadcastboard(socket, currgameId, username);
+            });
+
+            socket.on('resign', async () => {
+                console.log('resigned');
+                await this.apiService.resign(currgameId, username);
                 this.broadcastboard(socket, currgameId, username);
             });
 

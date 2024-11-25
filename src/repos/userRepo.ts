@@ -9,8 +9,8 @@ export class UserRepository {
         return await User.findById(userid);
     }
 
-    async registerUser(username: string, hashedPassword: string) {
-        const newUser = new User({ username, password: hashedPassword });
+    async registerUser(username: string, email: string, hashedPassword: string) {
+        const newUser = new User({ username, email, password: hashedPassword });
         await newUser.save();
     }
 }

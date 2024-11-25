@@ -16,11 +16,11 @@
 }
 
 .player-info {
-    width: 560px; /* Match canvas width */
+    width: 560px;
     padding: 15px;
     background-color: #f5f5f5;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .player-card {
@@ -42,7 +42,7 @@
 }
 
 .active-turn {
-    background-color: #4CAF50;
+    background-color: #4caf50;
     color: white;
 }
 
@@ -53,7 +53,7 @@
 
 #myCanvas {
     border: 2px solid #000000;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .game-status {
@@ -89,4 +89,31 @@
     display: flex;
     align-items: center;
     gap: 20px;
+}
+
+/* Styles for the resign button */
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.resign-button {
+    padding: 8px 16px;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: white;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.resign-button:hover {
+    background-color: #c82333;
+}
+
+.resign-button:active {
+    background-color: #bd2130;
 }

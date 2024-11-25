@@ -30,8 +30,11 @@ export class AuthController {
 
     async postSignup(req: Request, res: Response, next: NextFunction) {
         try {
-            const { username, password } = req.body;
-            await this.authService.registerUser(username, password);
+            const { username, email, password, cpassword } = req.body;
+            if (password != cpassword) {
+                // 'Password not matched');
+            }
+            await this.authService.registerUser(username, email, password);
             res.redirect('/auth/login');
         } catch (error) {
             next(error);

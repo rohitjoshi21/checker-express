@@ -25,8 +25,6 @@ export class GameController {
             const players: string[] = await this.gameService.joinGame(req['username']!, req.params.gameId);
             res.render('game/gamewindow', {
                 username: req['username'],
-                player1: players[0],
-                player2: players[1],
             });
         } catch (err) {
             next(err);

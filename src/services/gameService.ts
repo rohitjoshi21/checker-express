@@ -17,12 +17,12 @@ export class GameService {
     async joinGame(username: string, gameId: string): Promise<string[]> {
         const game = await this.gameRepository.findGame(gameId);
         if (!game) {
-            throw 'Game not found';
+            throw new Error('Game not found');
         }
 
         if (!game.players.includes(username)) {
             if (game.players.length >= 2) {
-                throw 'Game is full';
+                throw new Error('Game is full');
             }
 
             this.gameRepository.addPlayer(gameId, username);

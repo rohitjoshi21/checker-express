@@ -55,7 +55,8 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         req['username'] = user.username;
         next();
     } catch (error) {
-        console.error('Authentication error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown Error';
+        console.error('Authentication error:', errorMessage);
         res.redirect(RedirectPaths.authLogin);
         return;
     }

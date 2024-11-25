@@ -14,7 +14,7 @@
                 <div class="player-info">
                     <div class="player-card">
                         <div class="player-info-group">
-                            <div class="player-name"><%= player2 %></div>
+                            <div id="player2name" class="player-name">Player2</div>
                             <div class="piece-color">
                                 <span>Pieces:</span>
                                 <div id="player2color" class="color-indicator blue-piece"></div>
@@ -29,13 +29,16 @@
                 <div class="player-info">
                     <div class="player-card">
                         <div class="player-info-group">
-                            <div class="player-name"><%= player1 %></div>
+                            <div id="player1name" class="player-name">Player1</div>
                             <div class="piece-color">
                                 <span>Pieces:</span>
                                 <div id="player1color" class="color-indicator red-piece"></div>
                             </div>
                         </div>
-                        <div id="player1Status" class="player-status active-turn">Your Turn</div>
+                        <button id="resign" class="resign-button">Resign</button>
+                        <div class="player-controls">
+                            <div id="player1Status" class="player-status active-turn">Your Turn</div>
+                        </div>
                     </div>
                 </div>
             </div>

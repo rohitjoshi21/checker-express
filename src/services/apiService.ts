@@ -26,8 +26,10 @@ export class APIService {
             board: game.board,
             turn: game.turn,
             flipped: isFlipped,
+            myUsername: username,
+            nextUsername: nextplayer,
             status: game.status,
-            nextPlayer: nextplayer,
+            winner: game.winner,
         };
     }
 
@@ -35,6 +37,11 @@ export class APIService {
         const game = await this.gameRepository.findGame(gameId);
         if (!game) {
             throw new Error('Game not found');
+        }
+
+        if (game.status == 'completed') {
+            console.log('Game is completed, you cannot move pieces');
+            return;
         }
 
         if (!this.isValidMove(game.board, fromX, fromY, toX, toY, capture, game.turn)) {
@@ -72,13 +79,16 @@ export class APIService {
         }
 
         await game.save();
+    }
 
-        return {
-            board: game.board,
-            turn: game.turn,
-            status: game.status,
-            winner: game.winner,
-        };
+    async resign(gameId: string, resigner: string) {
+        const game = await this.gameRepository.findGame(gameId);
+        if (!game) {
+            throw new Error('Game not found');
+        }
+        game.status = 'completed';
+        game.winner = game.players.filter((player) => player != resigner)[0];
+        await game.save();
     }
 
     private isValidMove(

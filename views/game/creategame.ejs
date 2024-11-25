@@ -1,20 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Game Created</title>
-</head>
-<body>
-  <header>
-    <h1>Game Created Successfully</h1>
-  </header>
-  <main>
-    <p>Your game has been created! Share this Game ID to invite a friend:</p>
-    <p><strong>Game ID:</strong> <%= gameID %></p>
-    <div>
-      <a href="/game/join-game/<%= gameID %>">Start Game</a>
-    </div>
-  </main>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>New Game Created</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            body {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: rgb(84, 84, 147);
+                padding: 20px;
+                color: #333;
+            }
+
+            .container {
+                background: white;
+                padding: 40px;
+                border-radius: 16px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                text-align: center;
+                max-width: 500px;
+                width: 90%;
+            }
+
+            header {
+                margin-bottom: 30px;
+            }
+
+            h1 {
+                color: #1a2a6c;
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .success-icon {
+                width: 80px;
+                height: 80px;
+                background: #4caf50;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 20px auto;
+                color: white;
+                font-size: 40px;
+            }
+
+            .game-info {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+
+            .game-id {
+                font-size: 1.5rem;
+                color: #1a2a6c;
+                padding: 15px;
+                background: #e9ecef;
+                border-radius: 8px;
+                margin: 15px 0;
+                border: 2px dashed #1a2a6c;
+            }
+
+            .copy-button {
+                background: #4caf50;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1rem;
+                margin: 10px 0 20px 0;
+                transition: background 0.3s ease;
+            }
+
+            .copy-button:hover {
+                background: #45a049;
+            }
+
+            .start-game-button {
+                display: inline-block;
+                background: #1a2a6c;
+                color: white;
+                text-decoration: none;
+                padding: 15px 40px;
+                border-radius: 30px;
+                font-size: 1.1rem;
+                font-weight: bold;
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease;
+            }
+
+            .start-game-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(26, 42, 108, 0.3);
+            }
+
+            @media (max-width: 480px) {
+                .container {
+                    padding: 20px;
+                }
+
+                h1 {
+                    font-size: 1.5rem;
+                }
+
+                .game-id {
+                    font-size: 1.2rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Game Created Successfully!</h1>
+            </header>
+            <main>
+                <div class="success-icon">✓</div>
+
+                <div class="game-info">
+                    <p>Your game has been created! Share this Game ID to invite a friend:</p>
+                    <div class="game-id" id="gameId"><%= gameID %></div>
+                    <button onclick="copyGameId()" class="copy-button">Copy Game ID</button>
+                </div>
+
+                <a href="/game/join-game/<%= gameID %>" class="start-game-button">Start Game</a>
+            </main>
+        </div>
+
+        <script>
+            function copyGameId() {
+                const gameId = document.getElementById('gameId').innerText;
+                navigator.clipboard.writeText(gameId).then(() => {
+                    const button = document.querySelector('.copy-button');
+                    const originalText = button.innerText;
+                    button.innerText = 'Copied!';
+                    setTimeout(() => {
+                        button.innerText = originalText;
+                    }, 2000);
+                });
+            }
+        </script>
+    </body>
 </html>

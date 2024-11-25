@@ -4,6 +4,9 @@ interface GameState {
     board: number[];
     turn: number;
     flipped: boolean;
+    myUsername: string;
+    nextUsername: string;
+    status: string;
 }
 
 interface Move {
@@ -52,43 +55,48 @@ class CheckersGame {
     }
 
     private async initialize(): Promise<void> {
-        // Get canvas and context
-        const canvasElement = document.getElementById('myCanvas') as HTMLCanvasElement;
-        if (!canvasElement) {
-            throw new Error('Canvas element not found');
-        }
-
-        this.canvas = canvasElement;
+        this.canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
         this.canvas.width = this.BOARD_SIZE;
         this.canvas.height = this.BOARD_SIZE;
 
-        const context = this.canvas.getContext('2d');
-        if (!context) {
-            throw new Error('Could not get canvas context');
-        }
+        const context = this.canvas.getContext('2d')!;
         this.ctx = context;
 
         // Get game ID from URL
         const gameId = window.location.href.split('/')[5];
-        if (!gameId) {
-            throw new Error('Game ID not found in URL');
-        }
         this.gameId = gameId;
 
         this.setupSocketConnection();
 
         // Set up event listeners
+        const resignButton = document.getElementById('resign')!;
+        resignButton.addEventListener('click', (e) => this.handleResign(e));
         this.canvas.addEventListener('click', (e) => this.handleClick(e));
     }
 
-    private updatePlayerStatus(): void {
+    private handleResign(e: Event) {
+        console.log('clicked');
+        this.socket.emit('resign');
+        document.getElementById('gameStatus')!.textContent = 'You have resigned. Game Over!';
+    }
+
+    private updatePlayerStatus(player1: string, player2: string): void {
         const player1Status = document.getElementById('player1Status');
         const player2Status = document.getElementById('player2Status');
         const gameStatus = document.getElementById('gameStatus');
         const player1color = document.getElementById('player1color');
         const player2color = document.getElementById('player2color');
+        const player1name = document.getElementById('player1name');
+        const player2name = document.getElementById('player2name');
 
-        console.log(this.turn);
+        if (player1name && player2name) {
+            player1name.textContent = player1;
+            player2name.textContent = player2;
+            console.log(player1, player2);
+            // player1name.textContent = 'abc';
+            // player2name.textContent = 'efg';
+        }
+        // console.log(this.turn);
         if (player1Status && player2Status && player1color && player2color && gameStatus) {
             if (this.flipped) {
                 // Player 1 is red (1), Player 2 is blue (-1)
@@ -115,7 +123,7 @@ class CheckersGame {
         this.turn = data.turn;
         this.flipped = data.flipped;
         this.myPiece = this.flipped ? 1 : -1;
-        this.updatePlayerStatus();
+        this.updatePlayerStatus(data.myUsername, data.nextUsername);
     }
 
     private drawBoard(): void {
@@ -284,7 +292,7 @@ class CheckersGame {
     private setupSocketConnection(): void {
         console.log('socket starting', game.gameid);
 
-        const url = 'http://127.0.0.1:3000/game/join-game/'.concat(game.gameId);
+        const url = window.location.href;
         console.log(url);
         this.socket = io(url, {
             extraHeaders: {
