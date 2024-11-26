@@ -1,28 +1,29 @@
 // index.ts
 
-import express, { Request, Application, Response, NextFunction } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { isAuthenticated, isAuthenticatedSocket } from './middlewares/authMiddleware';
+import { isAuthenticated } from './middlewares/authMiddleware';
 import { redirectIfAuthenticated } from './middlewares/redirectIfAuthenticated';
+import { errorHandler } from './middlewares/errorHandler';
+import { createServer } from 'http';
+import { SocketController } from './sockets/socketController';
 import authRoutes from './routes/authRoutes';
 import gameRoutes from './routes/gameRoutes';
 import apiRoutes from './routes/apiRoutes';
-import { errorHandler } from './middlewares/errorHandler';
-import { createServer } from 'http';
-import { SocketController } from './sockets/sockerController';
-import { homeRoute } from './routes/homeRoute';
+import homeRoute from './routes/homeRoute';
 
 dotenv.config();
 
-const app: Application = express();
+const app = express();
 const port = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
-app.set('./views', path.join(__dirname, 'views'));
+// console.log(__dirname, path.join(__dirname, 'views'));
+// app.set('./views', path.join(__dirname, 'views'));
 
 app.use(cors());
 app.use(cookieParser());
@@ -40,17 +41,16 @@ app.use(errorHandler);
 
 const httpServer = createServer(app);
 
-// new SocketController(httpServer, [isAuthenticated, cors(), cookieParser()]);
-const socketapp = new SocketController(httpServer, /^\/game\/join-game\/([a-zA-Z0-9_-]+)$/);
-socketapp.use(isAuthenticatedSocket);
+const socketapp = new SocketController(httpServer);
+socketapp.use(isAuthenticated);
 
 httpServer.listen(port, async () => {
-    console.log(`[server]: Server is running at http://localhost:${port}`);
+    console.log(`Server is running at http://localhost:${port}`);
 
     try {
         await mongoose.connect(process.env.DATABASE_URL as string);
-        console.log('🛢️  Connected To Database!!');
+        console.log('Connected To Database!!');
     } catch (error) {
-        console.log('⚠️ Error to connect Database');
+        console.log('Error while connecting Database');
     }
 });

@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UserRepository } from '../repos/userRepo';
+import { CustomError } from '../types/CustomError';
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -13,14 +14,14 @@ export class AuthService {
         const user = await this.userRepository.findUser(username);
 
         if (!user) {
-            throw 'Username not found';
+            throw new CustomError(`Username "${username}" not found`, 400, 'LoginError');
         }
 
         if (await bcrypt.compare(password, user.password)) {
             const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
             return token;
         } else {
-            throw 'Incorrect password';
+            throw new CustomError('Incorrect password', 400, 'LoginError');
         }
     }
 

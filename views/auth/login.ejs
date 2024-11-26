@@ -124,11 +124,28 @@
             .social-button:hover {
                 background: #f5f5f5;
             }
+
+            /* Error message styles */
+            .error-message {
+                background-color: #fee2e2;
+                border: 1px solid #fecaca;
+                color: #dc2626;
+                padding: 12px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+            
         </style>
     </head>
     <body>
         <div class="container">
             <h1>Welcome Back</h1>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="error-message">
+                    <%= error %>
+                </div>
+            <% } %>
             <form action="/auth/login" method="POST">
                 <div class="form-group">
                     <label for="username">Username</label>

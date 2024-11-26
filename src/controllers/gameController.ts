@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { GameService } from '../services/gameService';
-import { Game } from '../models/gameModel';
+import { RedirectPaths } from '../config/redirects';
 
 export class GameController {
     private gameService: GameService;
@@ -28,7 +28,21 @@ export class GameController {
             });
         } catch (err) {
             next(err);
-            // res.status(500).json({ error: 'Failed to join game' });
+        }
+    }
+
+    async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const cookieName = 'token';
+
+            res.clearCookie(cookieName, {
+                httpOnly: true, // Ensures cookie is only accessible over HTTP(S), not JavaScript
+                secure: true, // Ensures cookie is only sent over HTTPS (set to true in production)
+                sameSite: 'strict', // Ensures cookie is sent only to same-site requests (for CSRF protection)
+            });
+            res.redirect(RedirectPaths.authLogin);
+        } catch (err) {
+            next(err);
         }
     }
 }

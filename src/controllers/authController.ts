@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/authService';
+import { CustomError } from '../types/CustomError';
 
 export class AuthController {
     private authService: AuthService;
@@ -31,9 +32,7 @@ export class AuthController {
         try {
             const { username, email, password, cpassword } = req.body;
             if (password != cpassword) {
-                console.log(password, cpassword);
-                console.log(req.body);
-                res.send('Password Mismatched');
+                throw new CustomError('Passwords not matched', 400, 'ValidationError');
             }
             await this.authService.registerUser(username, email, password);
             res.redirect('/auth/login');

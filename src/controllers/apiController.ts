@@ -13,7 +13,6 @@ export class APIController {
             res.json(boarddata);
         } catch (error) {
             next(error);
-            // res.status(500).json({ error: 'Failed to fetch game' });
         }
     }
 

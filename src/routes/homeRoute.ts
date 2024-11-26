@@ -9,62 +9,25 @@ interface GameCard {
     status: string;
 }
 
-export const homeRoute = async (req: Request, res: Response) => {
+const homeRoute = async (req: Request, res: Response) => {
     let gamesdb = await Game.find({});
-    let games: GameCard[] = [];
 
-    for (let game of gamesdb) {
-        let currgame: GameCard = {
-            id: game.id,
-            createdAt: game.createdAt,
-            player1: game.players[0],
-            player2: game.players[1],
-            status: game.status,
-        };
-        games.push(currgame);
-    }
+    // Sort games by createdAt in descending order
+    gamesdb = gamesdb.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // console.log(allgames.length);
-    // const games = [
-    //     {
-    //         id: 'game123',
-    //         createdAt: new Date('2024-11-24T10:00:00'),
-    //         player1: 'John',
-    //         player2: null,
-    //         status: 'waiting',
-    //     },
-    //     {
-    //         id: 'game456',
-    //         createdAt: new Date('2024-11-24T09:30:00'),
-    //         player1: 'Alice',
-    //         player2: 'Bob',
-    //         status: 'in_progress',
-    //     },
-    //     {
-    //         id: 'game789',
-    //         createdAt: new Date('2024-11-24T09:00:00'),
-    //         player1: 'Eve',
-    //         player2: 'Charlie',
-    //         status: 'completed',
-    //     },
-    //     {
-    //         id: 'game101',
-    //         createdAt: new Date('2024-11-24T08:45:00'),
-    //         player1: 'David',
-    //         player2: null,
-    //         status: 'waiting',
-    //     },
-    //     {
-    //         id: 'game102',
-    //         createdAt: new Date('2024-11-24T08:30:00'),
-    //         player1: 'Sarah',
-    //         player2: 'Mike',
-    //         status: 'waiting',
-    //     },
-    // ];
+    // Transform the sorted games into the GameCard format
+    let games: GameCard[] = gamesdb.map((game) => ({
+        id: game.id,
+        createdAt: game.createdAt,
+        player1: game.players[0],
+        player2: game.players[1],
+        status: game.status,
+    }));
 
     res.render('index', {
         username: req['username'],
         games: games,
     });
 };
+
+export default homeRoute;
