@@ -158,11 +158,9 @@ class CheckersGame {
 
             // Add event listener to home button
             homeButton.onclick = () => {
-                // Navigate back to homepage (replace with your actual routing method)
-                window.location.href = '/'; // Example homepage route
+                window.location.href = '/';
             };
 
-            // Hide game status text
             const gameStatus = document.getElementById('gameStatus')!;
             gameStatus.style.display = 'none';
         }
