@@ -36,9 +36,9 @@ export class GameController {
             const cookieName = 'token';
 
             res.clearCookie(cookieName, {
-                httpOnly: true, // Ensures cookie is only accessible over HTTP(S), not JavaScript
-                secure: true, // Ensures cookie is only sent over HTTPS (set to true in production)
-                sameSite: 'strict', // Ensures cookie is sent only to same-site requests (for CSRF protection)
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict',
             });
             res.redirect(RedirectPaths.authLogin);
         } catch (err) {

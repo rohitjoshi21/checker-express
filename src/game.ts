@@ -7,6 +7,7 @@ interface GameState {
     myUsername: string;
     nextUsername: string;
     status: string;
+    winner: string;
 }
 
 interface Move {
@@ -37,6 +38,7 @@ class CheckersGame {
     private turn: number = -1;
     private flipped: boolean = false;
     private myPiece: number = -1;
+    private status: string = 'notpaired';
 
     // Selection state
     private selectedPiece = {
@@ -125,6 +127,46 @@ class CheckersGame {
         this.turn = data.turn;
         this.flipped = data.flipped;
         this.myPiece = this.flipped ? 1 : -1;
+        this.status = data.status;
+
+        if (this.status == 'completed') {
+            const resultModal = document.getElementById('resultModal')!;
+            const resultTitle = document.getElementById('resultTitle')!;
+            const resultMessage = document.getElementById('resultMessage')!;
+            const homeButton = document.getElementById('homeButton')!;
+
+            let title: string;
+            let message: string;
+            let titleClass: string;
+
+            if (data.winner == data.myUsername) {
+                title = 'Congratulations!';
+                message = 'You won the game!';
+                titleClass = 'winner-text';
+            } else {
+                title = 'Game Over';
+                message = 'You lost the game!';
+                titleClass = 'loser-text';
+            }
+
+            resultTitle.textContent = title;
+            resultTitle.className = `result-title ${titleClass}`;
+            resultMessage.textContent = message;
+
+            // Show the modal
+            resultModal.classList.add('show');
+
+            // Add event listener to home button
+            homeButton.onclick = () => {
+                // Navigate back to homepage (replace with your actual routing method)
+                window.location.href = '/'; // Example homepage route
+            };
+
+            // Hide game status text
+            const gameStatus = document.getElementById('gameStatus')!;
+            gameStatus.style.display = 'none';
+        }
+
         this.updatePlayerStatus(data.myUsername, data.nextUsername);
     }
 

@@ -15,7 +15,6 @@ const homeRoute = async (req: Request, res: Response) => {
     // Sort games by createdAt in descending order
     gamesdb = gamesdb.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // Transform the sorted games into the GameCard format
     let games: GameCard[] = gamesdb.map((game) => ({
         id: game.id,
         createdAt: game.createdAt,

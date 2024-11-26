@@ -267,6 +267,78 @@
                     padding: 15px;
                 }
             }
+
+            /* Result Modal Styles */
+            .result-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .result-modal.show {
+                display: flex;
+                opacity: 1;
+            }
+
+            .result-card {
+                background: white;
+                border-radius: 20px;
+                padding: 40px;
+                text-align: center;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+                transform: translateY(-20px);
+                transition: transform 0.3s ease;
+            }
+
+            .result-modal.show .result-card {
+                transform: translateY(0);
+            }
+
+            .result-title {
+                font-size: 2.5rem;
+                margin-bottom: 20px;
+                font-weight: bold;
+            }
+
+            .result-message {
+                font-size: 1.4rem;
+                color: #555;
+                margin-bottom: 30px;
+            }
+
+            .home-button {
+                background: #1a2a6c;
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 10px;
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+
+            .home-button:hover {
+                background: #2a4858;
+            }
+
+            .winner-text {
+                color: #28a745;
+            }
+
+            .loser-text {
+                color: #dc3545;
+            }
         </style>
     </head>
     <body>
@@ -311,6 +383,13 @@
                 </div>
             </div>
             <div class="game-status" id="gameStatus">Game in Progress</div>
+        </div>
+        <div id="resultModal" class="result-modal">
+            <div class="result-card">
+                <div id="resultTitle" class="result-title"></div>
+                <div id="resultMessage" class="result-message"></div>
+                <button id="homeButton" class="home-button">Back to Home</button>
+            </div>
         </div>
     </body>
 </html>
